@@ -7,14 +7,19 @@
 - [Configuration](#configuration)
 - [Starting the Server](#starting-the-server)
 - [API Endpoints](#api-endpoints)
-  - [Get All Blogs](#get-all-blogs)
-  - [Get Blog List](#get-blog-list)
-  - [Get Featured Blogs](#get-featured-blogs)
-  - [Get Blogs by Category](#get-blogs-by-category)
-  - [Get Blog Details](#get-blog-details)
-  - [Create Blog](#create-blog)
-  - [Update Blog](#update-blog)
-  - [Delete Blog](#delete-blog)
+  - [Blog API](#blog-api)
+    - [Get All Blogs](#get-all-blogs)
+    - [Get Blog List](#get-blog-list)
+    - [Get Featured Blogs](#get-featured-blogs)
+    - [Get Blogs by Category](#get-blogs-by-category)
+    - [Get Blog Details](#get-blog-details)
+    - [Create Blog](#create-blog)
+    - [Update Blog](#update-blog)
+    - [Delete Blog](#delete-blog)
+  - [User API](#user-api)
+    - [Register User](#register-user)
+    - [Login User](#login-user)
+    - [Get Current User](#get-current-user)
 - [Integrating with Frontend](#integrating-with-frontend)
 
 ## Introduction
@@ -38,6 +43,8 @@ This guide provides instructions on how to set up and integrate the backend of t
    npm install
    ```
 
+   I've included Sequelize as a dependency in the `package.json` file, so running `npm install` will install Sequelize along with all other project dependencies. But, to use Sequelize, you'd have to run a command in your terminal to initialize Sequelize.
+
 ## Configuration
 
 1. **Set Up Environment Variables**
@@ -51,11 +58,20 @@ This guide provides instructions on how to set up and integrate the backend of t
    DB_HOST=your_db_host
    DB_DIALECT=mysql
    PORT=3000
+   ACCESS_TOKEN_SECRET=your_secret_key
    ```
 
 2. **Database Setup**
 
    Ensure you have a MySQL database running and create a database for the application. The name should match the `DB_NAME` variable in the `.env` file.
+
+   To set up the database (create database and database tables), here are a series of commands you would run:
+
+   ```bash
+   npx sequelize-cli init        # Initialize Sequelize
+   npx sequelize-cli db:create   # Create database (with the name specified in the .env file)
+   npx sequelize-cli db:migrate  # Perform migrations (create all tables in the database)
+   ```
 
 ## Starting the Server
 
@@ -73,7 +89,9 @@ npm run serve
 
 ## API Endpoints
 
-### Get All Blogs
+### Blog API
+
+#### Get All Blogs
 
 **Endpoint**: `GET /blogs`
 
@@ -100,7 +118,7 @@ npm run serve
 ]
 ```
 
-### Get Blog List
+#### Get Blog List
 
 **Endpoint**: `GET /blogs/blog-list`
 
@@ -121,7 +139,7 @@ npm run serve
 ]
 ```
 
-### Get Featured Blogs
+#### Get Featured Blogs
 
 **Endpoint**: `GET /blogs/featured`
 
@@ -149,7 +167,7 @@ npm run serve
 ]
 ```
 
-### Get Blogs by Category
+#### Get Blogs by Category
 
 **Endpoint**: `GET /blogs/category/:categoryId`
 
@@ -176,7 +194,7 @@ npm run serve
 ]
 ```
 
-### Get Blog Details
+#### Get Blog Details
 
 **Endpoint**: `GET /blogs/:blogId`
 
@@ -200,7 +218,7 @@ npm run serve
 }
 ```
 
-### Create Blog
+#### Create Blog
 
 **Endpoint**: `POST /blogs/create`
 
@@ -228,7 +246,7 @@ npm run serve
 }
 ```
 
-### Update Blog
+#### Update Blog
 
 **Endpoint**: `PUT /blogs/update/:blogId`
 
@@ -264,7 +282,7 @@ npm run serve
 }
 ```
 
-### Delete Blog
+#### Delete Blog
 
 **Endpoint**: `DELETE /blogs/:blogId`
 
@@ -274,6 +292,76 @@ npm run serve
 ```json
 {
   "message": "Blog deleted successfully"
+}
+```
+
+### User API
+
+#### Register User
+
+**Endpoint**: `POST /users/register`
+
+**Description**: Registers a new user.
+
+**Request Body**:
+```json
+{
+  "first_name": "John",
+  "last_name": "Doe",
+  "username": "johndoe",
+  "email": "johndoe@example.com",
+  "password": "password123"
+}
+```
+
+**Response**:
+```json
+{
+  "_id": 1,
+  "email": "johndoe@example.com"
+}
+```
+
+#### Login User
+
+**Endpoint**: `POST /users/login`
+
+**Description**: Logs in a user and returns an access token.
+
+**Request Body**:
+```json
+{
+  "email": "johndoe@example.com",
+  "password": "password123"
+}
+```
+
+**Response**:
+```json
+{
+  "accessToken": "jwt-token"
+}
+```
+
+#### Get Current User
+
+**Endpoint**: `GET /users/current`
+
+**Description**: Fetches the current logged-in user's details. Requires a valid access token.
+
+**Headers**:
+```json
+{
+  "Authorization": "Bearer jwt-token"
+}
+```
+
+**Response**:
+```json
+{
+  "username": "johndoe",
+  "email": "johndoe@example.com",
+  "id": 1
 }
 ```
 
@@ -307,55 +395,33 @@ To integrate the backend with your frontend application, follow these steps:
    const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000';
 
    const api = axios.create({
-     baseURL: API_BASE_URL,
+     baseURL: API_BASE
+
+_URL,
    });
 
-   export const getAllBlogs = async () => {
-     const response = await api.get('/blogs');
-     return response.data;
-   };
-
-   export const getBlogList = async () => {
-     const response = await api.get('/blogs/blog-list');
-     return response.data;
-   };
-
-   export const getFeaturedBlogs = async () => {
-     const response = await api.get('/blogs/featured');
-     return response.data;
-   };
-
-   export const getBlogsByCategory = async (categoryId) => {
-     const response = await api.get(`/blogs/category/${categoryId}`);
-     return response.data;
-   };
-
-   export const getBlogDetails = async (blogId) => {
-     const response = await api.get(`/blogs/${blogId}`);
-     return response.data;
-   };
-
-   export const createBlog = async (blogData) => {
-     const response = await api.post('/blogs/create', blogData);
-     return response.data;
-   };
-
-   export const updateBlog = async (blogId, blogData) => {
-     const response = await api.put(`/blogs/update/${blogId}`, blogData);
-     return response.data;
-   };
-
-   export const deleteBlog = async (blogId) => {
-     await api.delete(`/blogs/${blogId}`);
-   };
+   export const registerUser = (userData) => api.post('/users/register', userData);
+   export const loginUser = (userData) => api.post('/users/login', userData);
+   export const getCurrentUser = (token) => api.get('/users/current', {
+     headers: {
+       Authorization: `Bearer ${token}`
+     }
+   });
+   export const getAllBlogs = () => api.get('/blogs');
+   export const createBlog = (blogData) => api.post('/blogs/create', blogData);
+   // Add other API methods as needed
    ```
 
-4. **Use API Service in Components**
+4. **Handle Authentication**
 
-   Use the API service functions in your frontend components to fetch and manipulate blog data. For example, in a React component:
+   In your frontend application, store the access token upon successful login and include it in the headers for authenticated requests.
+
+5. **Display Blog Data**
+
+   Fetch and display blog data in your components. For example, in a React component:
 
    ```javascript
-   import React, { useEffect, useState } from 'react';
+   import React, { useState, useEffect } from 'react';
    import { getAllBlogs } from './api';
 
    const BlogList = () => {
@@ -364,7 +430,7 @@ To integrate the backend with your frontend application, follow these steps:
      useEffect(() => {
        const fetchBlogs = async () => {
          const blogData = await getAllBlogs();
-         setBlogs(blogData);
+         setBlogs(blogData.data);
        };
 
        fetchBlogs();
@@ -372,15 +438,12 @@ To integrate the backend with your frontend application, follow these steps:
 
      return (
        <div>
-         {blogs.map(blog => (
-           <div key={blog.blog_id}>
-             <h2>{blog.title}</h2>
-             <p>{blog.summary}</p>
-             <p>Author: {blog.User.username}</p>
-           </div>
-        
-
- ))}
+         <h1>Blog List</h1>
+         <ul>
+           {blogs.map(blog => (
+             <li key={blog.blog_id}>{blog.title}</li>
+           ))}
+         </ul>
        </div>
      );
    };
@@ -388,4 +451,4 @@ To integrate the backend with your frontend application, follow these steps:
    export default BlogList;
    ```
 
-By following these instructions, you can seamlessly integrate the backend API with the frontend application, allowing you to perform CRUD operations and display blog data dynamically.
+By following these steps, you can successfully integrate the backend of the blog site with your frontend application, allowing you to perform CRUD operations and display blog data to users.
