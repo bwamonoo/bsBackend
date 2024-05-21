@@ -1,8 +1,9 @@
 const express = require('express');
 const app = express();
 const { sequelize } = require('./models');
-const blogRoutes = require('./config/routes.js');
-const errorHandler = require("./controllers/errorHandler.js");
+const blogRoutes = require('./routes/blogRoutes.js');
+const userRoutes = require('./routes/userRoutes.js');
+const errorHandler = require("./middleware/errorHandler.js");
 
 // Middleware
 app.use(express.json());
@@ -11,6 +12,7 @@ app.use(express.json());
 
 // blogRoutes
 app.use('/blogs', blogRoutes);
+app.use('/user', userRoutes);
 app.use(errorHandler);
 
 const startServer = async () => {
