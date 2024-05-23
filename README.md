@@ -395,9 +395,7 @@ To integrate the backend with your frontend application, follow these steps:
    const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000';
 
    const api = axios.create({
-     baseURL: API_BASE
-
-_URL,
+     baseURL: API_BASE_URL,
    });
 
    export const registerUser = (userData) => api.post('/users/register', userData);
